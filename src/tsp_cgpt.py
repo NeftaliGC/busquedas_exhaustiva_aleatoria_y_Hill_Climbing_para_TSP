@@ -81,8 +81,8 @@ def plot_route(cities, route, radius):
     plt.show()
 
 # Example usage
-num_cities = 6
-radius = 10
+num_cities = 3
+radius = 1
 cities = [i * (360 / num_cities) for i in range(num_cities)]
 
 best_route, min_distance = solve_tsp(cities, radius)
