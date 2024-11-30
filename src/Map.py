@@ -8,7 +8,7 @@ class Map:
     def __init__(self, n, r = 1):
         self.n = n
         self.cities = list(range(n))
-        self.generate_angles()
+        self.generate_angles(method=1)
         self.r = r
         self.generate_matrix()
 
@@ -81,12 +81,15 @@ class Map:
 
         return distance
 
-    def getQuality(self, route):
+    def getQuality(self, route, normalize=False):
         total_distance = self.getTotalDistance(route)
         # Calcula el perímetro del círculo
         perimeter = 2 * math.pi * self.r
         
         # Calcula la calidad como la razón entre el perímetro y la distancia total
         quality = perimeter / total_distance if total_distance != 0 else 0
+
+        if normalize:
+            quality = quality / perimeter
 
         return quality

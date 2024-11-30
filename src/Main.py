@@ -17,6 +17,8 @@ def solve(nCitys, option, iter=3000, tweak=1):
         perm = algoritms.randomSearch(iter)
     elif option == 3:
         perm = algoritms.bruteForce(state.heap())
+    elif option == 4:
+        perm = algoritms.simulatedAnnealing(iter, tweak)
 
     return perm
 
@@ -30,6 +32,7 @@ if __name__ == "__main__":
     print("1. Hill Climbing")
     print("2. Random Search")
     print("3. Brute Force")
+    print("4. Simulated Annealing")
     option = int(input("\nIngrese el algoritmo a utilizar: "))
 
     metodo = "Hill Climbing" if option == 1 else "Random Search" if option == 2 else "Brute Force"
@@ -37,9 +40,9 @@ if __name__ == "__main__":
     iter = 0
     tweak = 0
 
-    if option == 1 or option == 2:
+    if option in [1, 2, 4]:
         iter = int(input("\nIngrese el numero de iteraciones: "))
-        if option == 1:
+        if option in [1, 4]:
             print("\n------Metodos de tweak------")
             print("1. Inversion entre dos nodos")
             print("2. Intercambio entre dos nodos")
@@ -47,8 +50,6 @@ if __name__ == "__main__":
             tweak = int(input("Ingrese el metodo de tweak: "))
 
     n = int(input("\nIngrese el numero de pruebas a realizar: "))
-
-
 
     # Inicializar una lista para almacenar los resultados de cada iteración
     results = {f"{metodo}": []}
@@ -64,6 +65,8 @@ if __name__ == "__main__":
         print("Calidad: ", solution[1])
         print("Distancia total: ", solution[2])
         print("Tiempo de ejecucion: ", end - start)
+        if option == 4:
+            print("Cambios: ", solution[5])
         print("\n")
 
         # Guardar los resultados de esta iteración en un diccionario
@@ -81,6 +84,8 @@ if __name__ == "__main__":
         progreso = ((i + 1) / n) * 100
         print(f"Progreso de pruebas: {progreso:.2f}% completado")
 
+    finalMap = [solution[3], solution[0]]
+
     # Guardar todos los resultados en un archivo JSON
     with open(file_path, 'w') as file:
         json.dump(results, file, indent=4)
@@ -91,6 +96,8 @@ if __name__ == "__main__":
     graph.graficar_distancia_total()
     graph.graficar_tiempo_ejecucion()
     graph.graficar_todas()
+    finalMap[0].showPlot(finalMap[1])
+    
     
 
     print("Fin del programa")

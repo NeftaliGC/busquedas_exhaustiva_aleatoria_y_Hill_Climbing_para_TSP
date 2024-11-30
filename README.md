@@ -1,78 +1,183 @@
-# Reporte sobre el uso de Búsqueda Exhaustiva, Búsqueda Aleatoria y Hill Climbing en el problema del agente viajero (TSP)
+# Reporte sobre el uso de Simulated Annealing en el problema del agente viajero (TSP)
 
 > Hecho por: Fabián Neftaly Guía Cruz, Daniela Gutierrez Pérez
 
-El Problema del Agente Viajero (TSP) es un problema de optimización combinatoria en el que se busca encontrar la ruta más corta para un agente (o viajero) que debe visitar un conjunto de nodos (ciudades) exactamente una vez y retornar al nodo de inicio, completando así un ciclo. La dificultad del TSP radica en que, a medida que aumenta el número de nodos, el número de rutas posibles crece factorialmente, haciendo que la solución óptima sea computacionalmente costosa de encontrar.
+El algoritmo de recocido simulado toma el concepto de Hill Climbing para encontrar las soluciones, excepto que
+este algoritmo no es tan estricto como otros algoritmos que solo aceptan soluciones de mejor calidad. Este algoritmo
+tiene la funcion que en base a una probabilidad puede aceptar soluciones peores con el fin de poder encontrar una solucion
+aun mejor en el futuro. Durante el progreso del algoritmo esta probabilidad de aceptacion disminuye para que asi el
+algoritmo pueda terminar encontrando la solucion mas factible.
 
-Para abordar este problema, existen varios algoritmos de búsqueda, cada uno con sus propias características y ventajas. A continuación, se detallan los métodos de Búsqueda Exhaustiva, Búsqueda Aleatoria y Hill Climbing, junto con una descripción de cómo se aplican al TSP.
+## Definición de la funcionalidad del algoritmo
 
-## 1. Búsqueda Exhaustiva
+Para este algorimo se requieren 3 aspectos mas: La temperatura, Una funcion G(T,t) que disminuya la temperatura de forma gradual mientras avanza el algoritmo y una manera de calcular la probabilidad de aceptación que se define como
 
-La Búsqueda Exhaustiva consiste en evaluar todas las posibles rutas que el agente puede tomar. En el caso del TSP, esto significa generar todas las permutaciones posibles de las ciudades y calcular la distancia total para cada una de ellas. La ruta con la menor distancia total es la solución óptima.
+<p>
+    P = e<sup>-(Quality(R) - Quality(S)) / T</sup>
+</p>
 
-## 2. Búsqueda Aleatoria
+Siendo R la nueva solucion y S la solucion anterior, T es la temperatura en ese momento.
 
-La Búsqueda Aleatoria genera rutas de manera aleatoria y evalúa su longitud. Este método no intenta explorar sistemáticamente todas las rutas posibles; en su lugar, genera diferentes rutas de manera aleatoria y se queda con la mejor encontrada durante las iteraciones.
+La temperatura inicial del algoritmo se establecion en 1000
 
-## 3. Hill Climbing
+La funcion G se establecio como:
 
-Hill Climbing es un método de búsqueda heurística en el que se empieza con una ruta inicial y, en cada iteración, se realizan pequeñas modificaciones (movimientos) para obtener rutas vecinas. La ruta se actualiza solo si la modificación genera una ruta más corta. El proceso se repite hasta que no haya más mejoras posibles, es decir, hasta alcanzar un "pico" o una solución local óptima.
+<p >
+    G(T<sub>0</sub>, t) = T<sub>0</sub> &times; (1 / log(1 + t))
+</p>
 
-## Solución del TSP con cada algoritmo
+y el numero de iteraciones que debe hacer el algoritmo antes de el cambio de temperatura se establecio en 1500 iteraciones.
 
-### 1. Configuración del Problema
+## Uso de las funciones Tweek
 
-Para asegurar una evaluación coherente entre los algoritmos, se ha optado por una configuración común:
+Las graficas muestran el comportamiento de 100 pruebas en diferentes mapeos de ciudades donde se encontro la mejor solución. Comparando calidad, distancia maxima y tiempo de ejecución
 
-- **Distribución de Ciudades**: Las ciudades (nodos) se han distribuido aleatoriamente en un círculo de radio 1. Esto permite calcular las distancias basándonos en una distancia euclidiana normalizada.
-- **Calidad de la Ruta**: En esta disposición, la mejor ruta posible tendría una longitud cercana a 2π, que es el perímetro del círculo. Esto proporciona un criterio objetivo de calidad que se puede utilizar para comparar la eficiencia de cada algoritmo.
-- **Número de Ciudades**: Se han utilizado 10 ciudades, lo cual permite que la Búsqueda Exhaustiva sea computacionalmente factible y otorga un contexto comparable para los otros métodos.
+### Funcion Tweek 1: Inversion entre dos nodos
 
-### 2. Parámetros de Ejecución
+![Graficas tweek 1](./info/Simulated/tweek1.png)
 
-Para poder observar y analizar la convergencia y la calidad de las soluciones, se han establecido los siguientes parámetros:
+1. Calidad por Iteración:
 
-- **Iteraciones**: Todos los algoritmos han sido configurados con 100 iteraciones como parámetro estándar para medir su evolución en distintas situaciones con soluciones diferentes.
-- **Límite de Evaluaciones**: En el caso de Búsqueda Aleatoria y Hill Climbing, se ha establecido un límite de 3000 evaluaciones. Esto proporciona suficiente margen para que ambos algoritmos puedan intentar mejorar sus soluciones.
+   - La dispersión en la calidad se debe en parte a la aleatoriedad intrínseca de las inversiones y a la probabilidad de aceptar peores soluciones al inicio (por la alta temperatura).
 
-## Resultados
+   - La tendencia global muestra que el algoritmo puede encontrar soluciones de calidad aceptable en diferentes escenarios, pero hay margen para mejorar la consistencia (e.g., afinando el número de iteraciones o ajustando la función de enfriamiento).
 
-### 1. Búsqueda Aleatoria
+2. Distancia Total por Iteración:
 
-![Resultados búsqueda aleatoria](./info/random/random_todo.png)  
-Como podemos observar, la calidad de las soluciones es bastante variable en las 100 iteraciones y no se logra percibir un patrón de convergencia. Además, la distancia se aleja en muchas ocasiones del objetivo de 2π. Sin embargo, el tiempo de ejecución es excelente, ya que nunca supera un segundo.
+   - Las oscilaciones en las distancias reflejan la exploración activa del espacio de soluciones, lo cual es esperado con el operador de inversión. Esto es positivo porque indica que el algoritmo no queda atrapado fácilmente en mínimos locales en las primeras etapas.
 
----
+   - La estabilización en el rango de distancias finales sugiere que el método de inversión logra encontrar recorridos razonablemente buenos para distintos mapeos de ciudades.
 
-### 2. Búsqueda Exhaustiva
+3. Tiempo de Ejecución por Iteración:
 
-![Resultados fuerza bruta](./info/brute/brute_todo.png)  
-La calidad de las rutas obtenidas se suele mantener consistente entre un rango de 1.0 y 1.1. La distancia de las soluciones se encuentra entre 5.75 y 6.25, lo cual nos muestra que en promedio se acerca a la distancia óptima. Sin embargo, el tiempo de ejecución es considerable, con un promedio de 20 segundos por iteración, lo que entorpece la búsqueda de soluciones.
+   - La inversión entre nodos es computacionalmente eficiente (ya que afecta solo una pequeña parte de la solución), lo que explica por qué los tiempos por iteración son consistentes.
 
----
+   - Los picos ocasionales podrían estar relacionados con el cálculo de la calidad de las soluciones vecinas en problemas más complejos (e.g., un mapeo con muchas intersecciones cercanas).
 
-### 3. Hill Climbing
+Ejemplo de una ejecución:
+Mejor ruta: [8, 1, 4, 9, 3, 7, 10, 5, 6, 2]
 
-#### Tweak 1 (inversión entre dos nodos)
+Calidad: 0.4819511418269046
 
-![Resultados de hill climbing tweak 1](./info/hill/hill_todo_tweek1.png)  
-La calidad se dispersa entre 1.4 y 1.15, con algunas excepciones. La distancia de las soluciones está un poco más dispersa que con fuerza bruta, aunque cercana a los valores esperados de 2π. El tiempo de ejecución es rápido, manteniéndose debajo de medio segundo.
+Distancia total: 13.036975663886333
 
-#### Tweak 2 (intercambio entre dos nodos)
+Tiempo de ejecucion: 0.30328893661499023
 
-![Resultados de hill climbing tweak 2](./info/hill/hill_todo_tweek2.png)  
-Aquí se observa una calidad dispersa entre 1.0 y 1.1, lo que indica que se consiguen buenas soluciones. La distancia de las soluciones parece estar algo dispersa al principio, pero después se estabiliza y converge cerca del valor de 2π. El tiempo de ejecución es menor a medio segundo, por lo que el método es bastante rápido.
+Cambios realizados durante el tiempo de ejecucion y cambio de temperatura para aceptar soluciones peores
 
-#### Tweak 3 (inserción de un nodo)
+```JSON
+    "Cambios": {
+        'iteracion_1': 822, 'iteracion_2': 831,
+        'iteracion_3': 827, 'iteracion_4': 832,
+        'iteracion_5': 812, 'iteracion_6': 817,
+        'iteracion_7': 807, 'iteracion_8': 831,
+        'iteracion_9': 841, 'iteracion_10': 806,
+        'iteracion_11': 824, 'iteracion_12': 837,
+        'iteracion_13': 812, 'iteracion_14': 822,
+        'iteracion_15': 822, 'iteracion_16': 757,
+        'iteracion_17': 701, 'iteracion_18': 642,
+        'iteracion_19': 488, 'iteracion_20': 362,
+        'iteracion_21': 263, 'iteracion_22': 244,
+        'iteracion_23': 217, 'iteracion_24': 198,
+        'iteracion_25': 174, 'iteracion_26': 226,
+        'iteracion_27': 175, 'iteracion_28': 165,
+        'iteracion_29': 209, 'iteracion_30': 189,
+        'iteracion_31': 172, 'iteracion_32': 181,
+        'iteracion_33': 210, 'iteracion_34': 210,
+        'iteracion_35': 182, 'iteracion_36': 199
+    }
+```
 
-![Resultados de hill climbing tweak 3](./info/hill/hill_todo_tweek3.png)  
-Al igual que con los métodos anteriores, la calidad de las soluciones se mantiene entre 1.0 y 1.1, lo que significa que las soluciones son buenas. Las distancias oscilan, pero la mayoría de las veces están cerca de 2π. El tiempo también es bastante bueno.
+Podemos ver que aun despues de muchos enfriamientos se siguen aceptando muchos intercambios, pero se vuelve mas selectivo pero algunas fluctuaciones son debido a la utilizacion de la funcion exponencial que para cuando la diferencia de calidades es muy pequeña la probabilidad de ser aceptada una solucion nueva se dispara haciendo que se acepten esas soluciones.
+
+### Funcion Tweek 2: Intercambio entre dos nodos
+
+![Graficas tweek 1](./info/Simulated/tweek2.png)
+
+1. Calidad por Iteración:
+   - Se encuentra un comportamiento medio parecido en la calidad de las soluciones encontradas, sin embargo existen muy pocos picos de calidad
+2. Distancia por iteración:
+   - Al estar relacionado con el punto anterior se muestran las mismas oscilaciones, con algunos picos en las distancias mas bajas y en promedio las distancias estan entre 15 y 19
+
+Ejemplo de ejcución
+Mejor ruta: [9, 7, 10, 4, 5, 6, 3, 1, 2, 8]
+
+Calidad: 0.35395587723427413
+
+Distancia total: 17.751323572516668
+
+Tiempo de ejecucion: 0.373729944229126
+
+```JSON
+    "Cambios":  {
+        'iteracion_1': 754, 'iteracion_2': 738,
+        'iteracion_3': 729, 'iteracion_4': 753,
+        'iteracion_5': 758, 'iteracion_6': 756,
+        'iteracion_7': 761, 'iteracion_8': 758,
+        'iteracion_9': 747, 'iteracion_10': 752,
+        'iteracion_11': 756, 'iteracion_12': 737,
+        'iteracion_13': 756, 'iteracion_14': 744,
+        'iteracion_15': 719, 'iteracion_16': 702,
+        'iteracion_17': 640, 'iteracion_18': 478,
+        'iteracion_19': 254, 'iteracion_20': 74,
+        'iteracion_21': 38, 'iteracion_22': 18,
+        'iteracion_23': 7, 'iteracion_24': 4,
+        'iteracion_25': 0, 'iteracion_26': 0,
+        'iteracion_27': 0, 'iteracion_28': 0,
+        'iteracion_29': 0, 'iteracion_30': 0,
+        'iteracion_31': 0, 'iteracion_32': 0,
+        'iteracion_33': 0, 'iteracion_34': 0,
+        'iteracion_35': 0, 'iteracion_36': 0}
+```
+
+Con esta funcion tweek se logra ver como si se logra que se dejen de hacer intercambios con soluciones peores a diferencia con el metodo anterior.
+
+### Funcion Tweek 3: Insercion de un nodo
+
+![Graficas tweek 1](./info/Simulated/tweek3.png)
+
+1. Calidad por Iteración:
+   - La calidad sigue oscilando entre los valores de 0 y 0.5 sin llegar a acercarse a los valores de 1 en calidad que seria lo mas deseado. No se logra persibir un promedio de calidad superior respecto a otras funciones
+2. Distancia por iteración:
+   - La calidad de las soluciones que encuentra el algoritmo con esta funcion tweek no se desvia tanto de las anteriores, sigue teniendo un promedio entre 15 y 18 de distancia.
+
+Mejor ruta: [5, 4, 3, 6, 8, 7, 10, 2, 9, 1]
+
+Calidad: 0.4191526678905457
+
+Distancia total: 14.99020712143082
+
+Tiempo de ejecucion: 0.28527331352233887
+
+```JSON
+    "Cambios":  {
+        'iteracion_1': 770, 'iteracion_2': 805,
+        'iteracion_3': 803, 'iteracion_4': 800,
+        'iteracion_5': 784, 'iteracion_6': 804,
+        'iteracion_7': 797, 'iteracion_8': 819,
+        'iteracion_9': 806, 'iteracion_10': 820,
+        'iteracion_11': 794, 'iteracion_12': 820,
+        'iteracion_13': 841, 'iteracion_14': 823,
+        'iteracion_15': 796, 'iteracion_16': 766,
+        'iteracion_17': 677, 'iteracion_18': 581,
+        'iteracion_19': 363, 'iteracion_20': 208,
+        'iteracion_21': 140, 'iteracion_22': 154,
+        'iteracion_23': 147, 'iteracion_24': 133,
+        'iteracion_25': 126, 'iteracion_26': 125,
+        'iteracion_27': 136, 'iteracion_28': 122,
+        'iteracion_29': 131, 'iteracion_30': 120,
+        'iteracion_31': 132, 'iteracion_32': 126,
+        'iteracion_33': 114, 'iteracion_34': 142,
+        'iteracion_35': 133, 'iteracion_36': 129}
+```
+
+Se puede notar que la exigencia del algoritmo aumenta tambien con esta funcion sin embargo nunca llega a ser tan estricto con las temperaturas mas bajas como el metodo anterior.
 
 ## Conclusiones
 
-Se concluye que la opción con resultados más estables para cualquier iteración es Hill Climbing con el intercambio entre dos nodos, ya que sus gráficas son las más estables y menos oscilantes de todos los métodos. Sin embargo, cualquiera de las funciones tweak de Hill Climbing es adecuada, ya que en promedio presentan soluciones factibles.
+La variacion y poca exactitud en las pruebas logra mostrar que aunque la temperatura inical puede ser suficiente al estar establecida en 1000 y la funcion G parece ser adecuada. No se logran ver grandes soluciones al problema y esto parece estar causado debido a que las funciones tweek generan soluciones vecinas demasiado parecidas en calidad aunque diferentes en recorrido, por lo que la solucion salta por el espacio de busqueda demasiadas veces al tener diferencias tan bajas en calidad.
 
-Hill Climbing para cualquier caso dado de n ciudades también se comporta de manera adecuada, lo que lo convierte en una buena opción para resolver el TSP. No obstante, si buscamos extrema precisión, la Búsqueda Exhaustiva es la mejor opción, aunque puede tardar mucho tiempo si el conjunto de ciudades es grande. En este caso, se estaría sacrificando precisión por exactitud.
+En general la implementación del algoritmo es buena pero las funciones tweek no parecen ser las indicadas para esta implementación, se necesitaria volver a plantear nuevas funciones tweek o buscar una forma de que la seleccion de alternativas peores sea mas estricta.
 
 ## Codigo fuente
 
